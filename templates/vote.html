@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Vote - Simple Poll{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">{{ poll_data.question }}</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/vote" id="voteForm">
+                    <div class="mb-4">
+                        <input type="hidden" name="vote" id="selectedVote" value="">
+                        {% for option in poll_data.options %}
+                        <div class="voting-option mb-3" data-value="{{ loop.index0 }}">
+                            <div class="option-card p-4 border rounded">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <span class="option-text fs-5">{{ option }}</span>
+                                                {% if poll_data.locations[loop.index0] %}
+                                                <div class="mt-1">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-map-marker-alt"></i> Location available
+                                                    </small>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="selection-indicator ms-auto">
+                                                <i class="fas fa-check-circle text-success d-none"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if poll_data.locations[loop.index0] %}
+                                        <div class="map-container">
+                                            <div class="option-map" id="map{{ loop.index0 }}" 
+                                                 data-location="{{ poll_data.locations[loop.index0] }}"
+                                                 style="height: 120px; border-radius: 8px; border: 2px solid #dee2e6;">
+                                            </div>
+                                            <div class="mt-1 text-center">
+                                                <a href="{{ poll_data.locations[loop.index0] }}" target="_blank" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-external-link-alt me-1"></i>View on Google Maps
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <div class="no-map-placeholder d-flex align-items-center justify-content-center" 
+                                             style="height: 120px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #dee2e6;">
+                                            <small class="text-muted text-center">
+                                                <i class="fas fa-map-marked-alt fa-2x mb-2"></i><br>
+                                                No location provided
+                                            </small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success btn-lg px-5" id="castVoteBtn" disabled>
+                            <i class="fas fa-vote-yea me-2"></i>Cast Vote
+                        </button>
+                        <div class="mt-2">
+                            <small class="text-muted">Please select an option above</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="mb-0">Current Results</h3>
+            </div>
+            <div class="card-body">
+                {% set total_votes = poll_data.votes | sum %}
+                {% for option in poll_data.options %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong>{{ option }}</strong>
+                        <span class="badge bg-secondary">
+                            {{ poll_data.votes[loop.index0] }} votes
+                            {% if total_votes > 0 %}
+                                ({{ "%.1f"|format((poll_data.votes[loop.index0] / total_votes) * 100) }}%)
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="progress">
+                        {% set percentage = (poll_data.votes[loop.index0] / total_votes * 100) if total_votes > 0 else 0 %}
+                        <div class="progress-bar" role="progressbar" style="width: {{ percentage }}%" 
+                             aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="text-muted mt-3">
+                    <strong>Total votes: {{ total_votes }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
